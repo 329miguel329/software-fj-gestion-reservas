@@ -41,7 +41,7 @@ software-fj-gestion-reservas/
 
 | Clase            | Tipo                           | Responsabilidad                                                                                             |
 | ---------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| `Entidad`        | Abstracta                      | Base común: `id`, fecha de creación, métodos abstractos `validar()` y `describir()`.                        |
+| `Entidad`        | Abstracta                      | Base común: `id`, fecha de creación y estado activo. `describir()` es abstracto; `validar()` es un método base que las subclases pueden sobrescribir. |
 | `Cliente`        | Hereda de `Entidad`            | Datos personales encapsulados (`nombre`, `documento`, `correo`, `telefono`) con propiedades y validaciones. |
 | `Servicio`       | Abstracta, hereda de `Entidad` | Define `calcular_costo()`, `describir()` y `validar_parametros()`.                                          |
 | `ReservaSala`    | Hereda de `Servicio`           | Costo por hora y capacidad de la sala.                                                                      |
@@ -109,20 +109,30 @@ Todos los errores y eventos relevantes quedan en `logs/eventos.log` con fecha, n
 
 `main.py` ejecuta estas operaciones:
 
-1. Registro válido de un cliente.
-2. Registro de un cliente con correo inválido (error controlado).
-3. Registro de un cliente con datos faltantes (error controlado).
-4. Creación válida de una `ReservaSala`.
-5. Creación válida de un `AlquilerEquipo`.
-6. Creación de una `Asesoria` con parámetros inválidos (error controlado).
-7. Reserva exitosa y confirmada.
-8. Reserva con duración negativa (error controlado).
-9. Reserva sobre un servicio no disponible (error controlado).
-10. Cálculo de costo con impuesto y descuento.
-11. Procesamiento exitoso de una reserva.
-12. Cancelación de una reserva ya procesada (operación no permitida).
+| #  | Operación                                                              | Resultado esperado                                                 |
+| -- | ---------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 01 | Registro válido de un cliente                                          | OK: `CLI-0001`                                                     |
+| 02 | Registro válido de un segundo cliente                                  | OK: `CLI-0002`                                                     |
+| 03 | Registro de un cliente con correo inválido                             | Error controlado: `ClienteError` (causa `ClienteInvalidoError`)    |
+| 04 | Registro de un cliente con datos faltantes (sin teléfono)              | Error controlado: `ClienteError` (causa `ClienteParametroFaltanteError`) |
+| 05 | Creación válida de una ReservaSala                                     | OK: `SAL-01`                                                       |
+| 06 | Creación válida de un AlquilerEquipo                                   | OK: `EQU-01`                                                       |
+| 07 | Creación válida de una Asesoria (Ciberseguridad, nivel senior)         | OK: `ASE-01`                                                       |
+| 08 | Creación de una Asesoria con parámetros inválidos (nivel 'master')     | Error controlado: `ServicioInvalidoError`                          |
+| 09 | Reserva exitosa y confirmada (sala, 3 horas, 8 asistentes)             | OK: `RES-0001` en estado `CONFIRMADA`                              |
+| 10 | Reserva exitosa de una Asesoria (senior, 2 sesiones, segundo cliente)  | OK: `RES-0002` en estado `PENDIENTE`, costo con IVA $428,400.00    |
+| 11 | Reserva con duración negativa (equipo, -2 días)                        | Error controlado: `ReservaInvalidaError` (causa `CalculoInconsistenteError`) |
+| 12 | Reserva sobre un servicio no disponible (equipo desactivado)           | Error controlado: `ServicioNoDisponibleError`                      |
+| 13 | Cálculo de costo con impuesto y descuento                              | OK: base $150,000.00, con IVA $178,500.00, con IVA y 10 % de descuento $160,650.00 |
+| 14 | Procesamiento exitoso de una reserva                                   | OK: `RES-0001` pasa a `PROCESADA`, total $178,500.00               |
+| 15 | Cancelación exitosa de una reserva pendiente (asesoría)                | OK: `RES-0002` pasa de `PENDIENTE` a `CANCELADA`                   |
+| 16 | Cancelación de una reserva ya procesada                                | Error controlado: `OperacionNoPermitidaError`                      |
 
-Cada operación se ejecuta dentro de `ejecutar_operacion()`, que captura cualquier error, lo muestra (incluida la causa encadenada) y lo registra en el log. El programa termina sin interrupciones y muestra un resumen al final, con el conteo de operaciones exitosas, errores controlados y la verificación `Comportamiento esperado: 12/12`.
+En total son 10 operaciones válidas y 6 inválidas. Las operaciones 09, 10 y 13 muestran el polimorfismo: la sala cobra por hora, mientras que la asesoría cobra por sesión multiplicada por el recargo de su nivel (`senior` = 1.5).
+
+Los ids de clientes y reservas los genera `Entidad` con el prefijo de cada clase (`CLI-0001`, `RES-0001`). Los servicios reciben su id a mano (`SAL-01`, `EQU-01`, `ASE-01`). La reserva de la operación 11 falla después de recibir su id (`RES-0003`), por eso ese id no aparece en el resumen.
+
+Cada operación se ejecuta dentro de `ejecutar_operacion()`, que captura cualquier error, lo muestra (incluida la causa encadenada) y lo registra en el log. El programa termina sin interrupciones y muestra un resumen al final, con el conteo de operaciones exitosas, errores controlados y la verificación `Comportamiento esperado: 16/16`.
 
 ---
 
@@ -134,9 +144,25 @@ Cada operación se ejecuta dentro de `ejecutar_operacion()`, que captura cualqui
 ## Ejecución
 
 ```bash
-git clone https://github.com/<usuario>/software-fj-gestion-reservas.git
+git clone https://github.com/329miguel329/software-fj-gestion-reservas.git
 cd software-fj-gestion-reservas
 python main.py
 ```
 
 Después de ejecutar, revisa el archivo `logs/eventos.log`.
+
+---
+
+## Integrantes
+
+| Nombre                    | Rol / Aporte                                                                  |
+| ------------------------- | ----------------------------------------------------------------------------- |
+| _Nombre del integrante 1_ | Clase abstracta `Entidad` y clase `Cliente` (`entidad.py`, `cliente.py`)      |
+| _Nombre del integrante 2_ | Jerarquía de servicios (`servicios.py`)                                       |
+| _Nombre del integrante 3_ | Clase `Reserva` y su ciclo de vida (`reserva.py`)                             |
+| _Nombre del integrante 4_ | Excepciones, logger y `SistemaGestion` (`excepciones.py`, `logger.py`, `gestor.py`) |
+| _Nombre del integrante 5_ | Simulación (`main.py`) y documentación (`README.md`)                          |
+
+**Grupo:** ___
+
+**Tutor:** ___
