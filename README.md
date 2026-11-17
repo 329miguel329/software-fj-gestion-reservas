@@ -47,7 +47,7 @@ software-fj-gestion-reservas/
 | `ReservaSala`    | Hereda de `Servicio`           | Costo por hora y capacidad de la sala.                                                                      |
 | `AlquilerEquipo` | Hereda de `Servicio`           | Costo por día y cantidad de equipos.                                                                        |
 | `Asesoria`       | Hereda de `Servicio`           | Costo por sesión según especialidad y nivel.                                                                |
-| `Reserva`        | Hereda de `Entidad`            | Integra cliente, servicio, duración y estado (`PENDIENTE`, `CONFIRMADA`, `CANCELADA`, `PROCESADA`).         |
+| `Reserva`        | Hereda de `Entidad`            | Integra cliente, servicio, duración y estado (`PENDIENTE`, `CONFIRMADA`, `PROCESADA`, `CANCELADA`, `FALLIDA`). |
 | `SistemaGestion` | Gestor                         | Mantiene las listas internas y coordina las operaciones.                                                    |
 
 ### Polimorfismo
@@ -72,13 +72,27 @@ Excepciones personalizadas definidas en `excepciones.py`:
 
 ```
 SoftwareFJError (base)
-├── ClienteInvalidoError
+├── ClienteError
+│   ├── ClienteInvalidoError
+│   └── ClienteParametroFaltanteError
 ├── ServicioInvalidoError
 ├── ServicioNoDisponibleError
-├── ReservaInvalidaError
+├── ReservaError
+│   └── ReservaInvalidaError
 ├── OperacionNoPermitidaError
 └── CalculoInconsistenteError
 ```
+
+### Ciclo de vida de una reserva
+
+```
+PENDIENTE ──confirmar()──► CONFIRMADA ──procesar()──► PROCESADA (no se puede cancelar)
+    │                          │
+    └──────cancelar()──────────┴──► CANCELADA
+PENDIENTE ──procesar() falla al confirmar──► FALLIDA
+```
+
+`procesar()` confirma automáticamente una reserva `PENDIENTE` antes de calcular el total.
 
 Se usan los siguientes bloques:
 
@@ -93,7 +107,7 @@ Todos los errores y eventos relevantes quedan en `logs/eventos.log` con fecha, n
 
 ## Operaciones simuladas
 
-`main.py` ejecuta al menos estas operaciones:
+`main.py` ejecuta estas operaciones:
 
 1. Registro válido de un cliente.
 2. Registro de un cliente con correo inválido (error controlado).
@@ -104,11 +118,11 @@ Todos los errores y eventos relevantes quedan en `logs/eventos.log` con fecha, n
 7. Reserva exitosa y confirmada.
 8. Reserva con duración negativa (error controlado).
 9. Reserva sobre un servicio no disponible (error controlado).
-10. Cancelación de una reserva ya procesada (operación no permitida).
-11. Cálculo de costo con impuesto y descuento.
-12. Procesamiento exitoso de una reserva.
+10. Cálculo de costo con impuesto y descuento.
+11. Procesamiento exitoso de una reserva.
+12. Cancelación de una reserva ya procesada (operación no permitida).
 
-El programa termina sin interrupciones y muestra un resumen al final.
+Cada operación se ejecuta dentro de `ejecutar_operacion()`, que captura cualquier error, lo muestra (incluida la causa encadenada) y lo registra en el log. El programa termina sin interrupciones y muestra un resumen al final, con el conteo de operaciones exitosas, errores controlados y la verificación `Comportamiento esperado: 12/12`.
 
 ---
 
