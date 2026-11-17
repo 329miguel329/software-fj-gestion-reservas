@@ -2,28 +2,13 @@ import re
 from typing import Optional
 
 from .entidad import Entidad
-from .excepciones import OperacionNoPermitidaError
+from .excepciones import (
+    ClienteError,
+    ClienteInvalidoError,
+    ClienteParametroFaltanteError,
+    OperacionNoPermitidaError,
+)
 from .logger import registrar_error, registrar_evento
-
-
-# ---------------- Excepciones propias del cliente ----------------
-class ClienteError(Exception):
-    pass
-
-
-class ClienteInvalidoError(ClienteError):
-
-    def __init__(self, campo: str, mensaje: str):
-        self.campo = campo
-        super().__init__(f"[{campo}] {mensaje}")
-
-
-class ClienteParametroFaltanteError(ClienteError):
-    
-
-    def __init__(self, campo: str):
-        self.campo = campo
-        super().__init__(f"Parámetro obligatorio faltante: '{campo}'")
 
 
 _RE_NOMBRE = re.compile(r"^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' ]{3,60}$")
