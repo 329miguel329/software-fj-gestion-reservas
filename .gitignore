@@ -1,0 +1,16 @@
+.venv/
+venv/
+env/
+.env
+
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+.claude
+CLAUDE.md
+
+.vscode/
+.idea/
+
+.DS_Store
