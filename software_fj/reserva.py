@@ -26,7 +26,7 @@ class Reserva(Entidad):  # La reserva es una entidad del sistema, por eso hereda
     PROCESADA = "PROCESADA"  # Reserva confirmada y con el total ya calculado (estado final)
     FALLIDA = "FALLIDA"  # Reserva que no se pudo procesar
 
-    _contador = 0   # Contador de clase (compartido por todas las reservas) para generar ids consecutivos
+    PREFIJO = "RES"  # Prefijo que usa Entidad para generar los ids: RES-0001, RES-0002...
 
     def __init__(self, cliente, servicio, duracion, **extras):  # Constructor; **extras guarda datos opcionales como asistentes o cantidad
         # Validamos los tipos ANTES de gastar un id
@@ -34,8 +34,7 @@ class Reserva(Entidad):  # La reserva es una entidad del sistema, por eso hereda
             raise ReservaInvalidaError("La reserva requiere un Cliente válido.")  # Error si no lo es
         if not isinstance(servicio, Servicio):  # El servicio debe ser un objeto de una clase hija de Servicio
             raise ReservaInvalidaError("La reserva requiere un Servicio válido.")  # Error si no lo es
-        Reserva._contador += 1  # Incrementa el contador compartido
-        super().__init__(f"RES-{Reserva._contador:03d}")  # Crea el id con formato RES-001, RES-002... y lo guarda en Entidad
+        super().__init__()  # Sin identificador: Entidad genera el id con el PREFIJO de la clase (RES-0001...)
         # Cada servicio valida a su manera (polimorfismo); el error original se encadena
         try:  # Intenta validar la solicitud con las reglas del servicio elegido
             servicio.validar_solicitud(duracion, **extras)  # Cada servicio aplica su propia validación (polimorfismo)
@@ -125,6 +124,3 @@ class Reserva(Entidad):  # La reserva es una entidad del sistema, por eso hereda
     def describir(self):  # Descripción de la reserva
         return (f"{self.id} | {self._cliente.nombre} | {self._servicio.nombre} | "  # Primera parte: id, cliente y servicio
                 f"{self._duracion} | {self._estado}")  # Segunda parte: duración y estado
-
-    def __str__(self):  # Define cómo se muestra la reserva con print()
-        return self.describir()  # Usa la descripción

@@ -101,15 +101,22 @@ def main():
             "correo": "ana.perez@correo.com", "telefono": "3001234567"}))
     id_cliente = cliente.id if cliente is not None else None
 
+    cliente_2 = ejecutar_operacion(
+        2, "Registro válido de un segundo cliente",
+        lambda: sistema.registrar_cliente({
+            "nombre": "Juan Esteban Torres", "documento": "1098765432",
+            "correo": "juan.torres@correo.com", "telefono": "3157654321"}))
+    id_cliente_2 = cliente_2.id if cliente_2 is not None else None
+
     ejecutar_operacion(
-        2, "Registro de un cliente con correo inválido",
+        3, "Registro de un cliente con correo inválido",
         lambda: sistema.registrar_cliente({
             "nombre": "Carlos Gómez", "documento": "80123456",
             "correo": "carlos.gomez@", "telefono": "3109876543"}),
         espera_error=True)
 
     ejecutar_operacion(
-        3, "Registro de un cliente con datos faltantes (sin teléfono)",
+        4, "Registro de un cliente con datos faltantes (sin teléfono)",
         lambda: sistema.registrar_cliente({
             "nombre": "Laura Ríos", "documento": "52123456",
             "correo": "laura.rios@correo.com"}),
@@ -117,22 +124,28 @@ def main():
 
     # ---------- Servicios ----------
     ejecutar_operacion(
-        4, "Creación válida de una ReservaSala",
+        5, "Creación válida de una ReservaSala",
         lambda: sistema.crear_servicio(
             "sala", identificador="SAL-01", nombre="Sala Innovación",
             costo_hora=50000, capacidad=10))
 
     ejecutar_operacion(
-        5, "Creación válida de un AlquilerEquipo",
+        6, "Creación válida de un AlquilerEquipo",
         lambda: sistema.crear_servicio(
             "equipo", identificador="EQU-01", nombre="Portátil",
             costo_dia=80000, stock=5))
 
     ejecutar_operacion(
-        6, "Creación de una Asesoria con parámetros inválidos (nivel 'master')",
+        7, "Creación válida de una Asesoria (Ciberseguridad, nivel senior)",
         lambda: sistema.crear_servicio(
             "asesoria", identificador="ASE-01", nombre="Asesoría en ciberseguridad",
-            especialidad="Ciberseguridad", nivel="master", costo_sesion=120000),
+            especialidad="Ciberseguridad", nivel="senior", costo_sesion=120000))
+
+    ejecutar_operacion(
+        8, "Creación de una Asesoria con parámetros inválidos (nivel 'master')",
+        lambda: sistema.crear_servicio(
+            "asesoria", identificador="ASE-02", nombre="Asesoría en desarrollo web",
+            especialidad="Desarrollo web", nivel="master", costo_sesion=100000),
         espera_error=True)
 
     # ---------- Reservas ----------
@@ -142,12 +155,25 @@ def main():
         return nueva
 
     reserva = ejecutar_operacion(
-        7, "Reserva exitosa y confirmada (sala, 3 horas, 8 asistentes)",
+        9, "Reserva exitosa y confirmada (sala, 3 horas, 8 asistentes)",
         reservar_y_confirmar)
     id_reserva = reserva.id if reserva is not None else None
 
+    def reservar_asesoria():
+        # El costo se calcula con la fórmula propia de Asesoria (polimorfismo)
+        nueva = sistema.crear_reserva(id_cliente_2, "ASE-01", 2)
+        costo = sistema.calcular_costo_reserva(nueva.id, impuesto=0.19)
+        return f"{nueva} | Costo con IVA: ${costo:,.2f}"
+
     ejecutar_operacion(
-        8, "Reserva con duración negativa (equipo, -2 días)",
+        10, "Reserva exitosa de una Asesoria (senior, 2 sesiones, segundo cliente)",
+        reservar_asesoria)
+    # Queda PENDIENTE; se usa más adelante para la cancelación exitosa
+    id_reserva_asesoria = next(
+        (r.id for r in sistema.reservas if r.servicio.id == "ASE-01"), None)
+
+    ejecutar_operacion(
+        11, "Reserva con duración negativa (equipo, -2 días)",
         lambda: sistema.crear_reserva(id_cliente, "EQU-01", -2),
         espera_error=True)
 
@@ -156,7 +182,7 @@ def main():
         return sistema.crear_reserva(id_cliente, "EQU-01", 2, cantidad=1)
 
     ejecutar_operacion(
-        9, "Reserva sobre un servicio no disponible (equipo desactivado)",
+        12, "Reserva sobre un servicio no disponible (equipo desactivado)",
         reservar_servicio_desactivado,
         espera_error=True)
 
@@ -170,7 +196,7 @@ def main():
                 f"Con IVA y 10 % de descuento: ${con_descuento:,.2f}")
 
     ejecutar_operacion(
-        10, "Cálculo de costo con impuesto y descuento",
+        13, "Cálculo de costo con impuesto y descuento",
         calcular_variantes)
 
     def procesar():
@@ -178,11 +204,21 @@ def main():
         return f"{id_reserva} procesada. Total cobrado: ${total:,.2f}"
 
     ejecutar_operacion(
-        11, "Procesamiento exitoso de una reserva",
+        14, "Procesamiento exitoso de una reserva",
         procesar)
 
+    def cancelar_pendiente():
+        pendiente = sistema.buscar_reserva(id_reserva_asesoria)
+        estado_anterior = pendiente.estado
+        sistema.cancelar_reserva(id_reserva_asesoria)
+        return f"{pendiente.id}: {estado_anterior} -> {pendiente.estado}"
+
     ejecutar_operacion(
-        12, "Cancelación de una reserva ya procesada",
+        15, "Cancelación exitosa de una reserva pendiente (asesoría)",
+        cancelar_pendiente)
+
+    ejecutar_operacion(
+        16, "Cancelación de una reserva ya procesada",
         lambda: sistema.cancelar_reserva(id_reserva),
         espera_error=True)
 

@@ -1,3 +1,11 @@
+"""
+cliente.py - Clase Cliente de Software FJ.
+
+Guarda los datos personales del cliente de forma encapsulada (atributos
+privados con propiedades) y los valida al crearlo y al modificarlo. Lleva el
+historial de ids de sus reservas e incluye una fábrica desde diccionario con
+try/except/else/finally y encadenamiento de excepciones.
+"""
 import re
 from typing import Optional
 
@@ -14,11 +22,11 @@ from .logger import registrar_error, registrar_evento
 _RE_NOMBRE = re.compile(r"^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' ]{3,60}$")
 _RE_DOCUMENTO = re.compile(r"^\d{5,12}$")
 _RE_CORREO = re.compile(r"^[\w.+-]+@[\w-]+(\.[\w-]+)+$")
-_RE_TELEFONO = re.compile(r"^3\d{9}$")  
+_RE_TELEFONO = re.compile(r"^3\d{9}$")
 
 
 class Cliente(Entidad):
-    
+    """Cliente de Software FJ con datos personales validados."""
 
     PREFIJO = "CLI"
 
@@ -26,7 +34,7 @@ class Cliente(Entidad):
                  documento: Optional[str] = None,
                  correo: Optional[str] = None,
                  telefono: Optional[str] = None) -> None:
-        
+        """Valida todos los datos antes de crear el cliente; si alguno falla, no se genera id."""
         nombre = self._validar_nombre(nombre)
         documento = self._validar_documento(documento)
         correo = self._validar_correo(correo)
@@ -34,10 +42,10 @@ class Cliente(Entidad):
 
         super().__init__()
         self.__nombre = nombre
-        self.__documento = documento      
+        self.__documento = documento
         self.__correo = correo
         self.__telefono = telefono
-        self.__reservas_ids: list = []    
+        self.__reservas_ids: list = []
         registrar_evento(f"Cliente creado: {self.id} ({self.__nombre})")
 
     # ---------- Validadores (estáticos, reutilizables) ----------
@@ -81,6 +89,7 @@ class Cliente(Entidad):
     # ---------- Propiedades con validación en el setter ----------
     @property
     def nombre(self) -> str:
+        """Nombre completo, normalizado en formato título."""
         return self.__nombre
 
     @nombre.setter
@@ -89,10 +98,12 @@ class Cliente(Entidad):
 
     @property
     def documento(self) -> str:
+        """Número de documento (solo lectura)."""
         return self.__documento
 
     @property
     def correo(self) -> str:
+        """Correo electrónico en minúsculas."""
         return self.__correo
 
     @correo.setter
@@ -101,6 +112,7 @@ class Cliente(Entidad):
 
     @property
     def telefono(self) -> str:
+        """Teléfono celular de 10 dígitos."""
         return self.__telefono
 
     @telefono.setter
@@ -109,14 +121,14 @@ class Cliente(Entidad):
 
     @property
     def reservas(self) -> tuple:
-        
+        """Ids de las reservas del cliente (copia de solo lectura)."""
         return tuple(self.__reservas_ids)
 
     # ---------- Método con parámetros opcionales  ----------
     def actualizar_datos(self, nombre: Optional[str] = None,
                          correo: Optional[str] = None,
                          telefono: Optional[str] = None) -> None:
-        
+        """Actualiza uno o varios datos; si alguno es inválido, no cambia ninguno."""
         if nombre is None and correo is None and telefono is None:
             raise ClienteParametroFaltanteError("nombre, correo o telefono")
         try:
@@ -132,6 +144,7 @@ class Cliente(Entidad):
 
     # ---------- Historial de reservas ----------
     def registrar_reserva(self, id_reserva: str) -> None:
+        """Asocia una reserva al cliente; debe estar activo y no tenerla ya."""
         self.verificar_activo()
         if id_reserva in self.__reservas_ids:
             raise OperacionNoPermitidaError(
@@ -140,22 +153,24 @@ class Cliente(Entidad):
         registrar_evento(f"{self.id}: reserva {id_reserva} asociada.")
 
     def quitar_reserva(self, id_reserva: str) -> None:
+        """Quita una reserva del historial del cliente."""
         try:
             self.__reservas_ids.remove(id_reserva)
         except ValueError as e:
-            
             raise OperacionNoPermitidaError(
                 f"{self.id} no tiene la reserva {id_reserva}.") from e
         registrar_evento(f"{self.id}: reserva {id_reserva} retirada.")
 
     # ---------- Implementación de métodos de Entidad ----------
     def describir(self) -> str:
+        """Devuelve una línea con los datos del cliente, su estado y número de reservas."""
         estado = "activo" if self.activo else "inactivo"
         return (f"Cliente {self.id} | {self.__nombre} | Doc: {self.__documento} | "
                 f"{self.__correo} | Tel: {self.__telefono} | {estado} | "
                 f"Reservas: {len(self.__reservas_ids)}")
 
     def validar(self) -> bool:
+        """Revalida todos los datos guardados; lanza ClienteError si alguno no es válido."""
         self._validar_nombre(self.__nombre)
         self._validar_documento(self.__documento)
         self._validar_correo(self.__correo)
@@ -165,7 +180,7 @@ class Cliente(Entidad):
     # ---------- Fábrica con try/except/else/finally y encadenamiento ----------
     @classmethod
     def desde_diccionario(cls, datos: dict) -> "Cliente":
-        
+        """Crea un cliente a partir de un diccionario; encadena el error original si falla."""
         try:
             cliente = cls(
                 nombre=datos.get("nombre"),
@@ -186,6 +201,7 @@ class Cliente(Entidad):
             registrar_evento("Fin del intento de registro de cliente.")
 
     def a_diccionario(self) -> dict:
+        """Devuelve los datos del cliente como diccionario."""
         return {
             "id": self.id,
             "nombre": self.__nombre,

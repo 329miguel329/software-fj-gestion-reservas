@@ -89,9 +89,6 @@ class Servicio(Entidad, ABC):  # Clase abstracta: hereda de Entidad y de ABC, po
         total = costo_base * (1 - descuento) * (1 + impuesto)  # Primero resta el descuento y luego suma el impuesto
         return round(total, 2)                                  # Redondea a 2 decimales y devuelve el total
 
-    def __str__(self):  # Método especial que define cómo se muestra el objeto con print()
-        return self.describir()           # Al imprimir el objeto se muestra su descripción
-
 
 class ReservaSala(Servicio):  # Servicio concreto: hereda de Servicio e implementa todos sus métodos abstractos
     """Servicio de alquiler de salas, cobrado por horas."""
