@@ -157,12 +157,12 @@ Después de ejecutar, revisa el archivo `logs/eventos.log`.
 
 | Nombre                    | Rol / Aporte                                                                  |
 | ------------------------- | ----------------------------------------------------------------------------- |
-| _Nombre del integrante 1_ | Clase abstracta `Entidad` y clase `Cliente` (`entidad.py`, `cliente.py`)      |
-| _Nombre del integrante 2_ | Jerarquía de servicios (`servicios.py`)                                       |
-| _Nombre del integrante 3_ | Clase `Reserva` y su ciclo de vida (`reserva.py`)                             |
-| _Nombre del integrante 4_ | Excepciones, logger y `SistemaGestion` (`excepciones.py`, `logger.py`, `gestor.py`) |
-| _Nombre del integrante 5_ | Simulación (`main.py`) y documentación (`README.md`)                          |
+| _Santiago Fernandez Mora_ | Clase abstracta `Entidad` y clase `Cliente` (`entidad.py`, `cliente.py`)      |
+| _David Rodriguez_         | Jerarquía de servicios (`servicios.py`)                                       |
+| _David Rodriguez_         | Clase `Reserva` y su ciclo de vida (`reserva.py`)                             |
+| _Miguel Angel Muñoz_      | Excepciones, logger y `SistemaGestion` (`excepciones.py`, `logger.py`, `gestor.py`) |
+| _Miguel Angel Muñoz_      | Simulación (`main.py`) y documentación (`README.md`)                          |
 
-**Grupo:** ___
+**Grupo:** 213023_624
 
-**Tutor:** ___
+**Tutor:** EDDUAR YAKSEIR PEREZ PEREZ
