@@ -129,10 +129,16 @@ def main():
             costo_dia=80000, stock=5))
 
     ejecutar_operacion(
-        6, "Creación de una Asesoria con parámetros inválidos (nivel 'master')",
+        6, "Creación válida de una Asesoria (Ciberseguridad, nivel senior)",
         lambda: sistema.crear_servicio(
             "asesoria", identificador="ASE-01", nombre="Asesoría en ciberseguridad",
-            especialidad="Ciberseguridad", nivel="master", costo_sesion=120000),
+            especialidad="Ciberseguridad", nivel="senior", costo_sesion=120000))
+
+    ejecutar_operacion(
+        7, "Creación de una Asesoria con parámetros inválidos (nivel 'master')",
+        lambda: sistema.crear_servicio(
+            "asesoria", identificador="ASE-02", nombre="Asesoría en desarrollo web",
+            especialidad="Desarrollo web", nivel="master", costo_sesion=100000),
         espera_error=True)
 
     # ---------- Reservas ----------
@@ -142,12 +148,22 @@ def main():
         return nueva
 
     reserva = ejecutar_operacion(
-        7, "Reserva exitosa y confirmada (sala, 3 horas, 8 asistentes)",
+        8, "Reserva exitosa y confirmada (sala, 3 horas, 8 asistentes)",
         reservar_y_confirmar)
     id_reserva = reserva.id if reserva is not None else None
 
+    def reservar_asesoria():
+        # El costo se calcula con la fórmula propia de Asesoria (polimorfismo)
+        nueva = sistema.crear_reserva(id_cliente, "ASE-01", 2)
+        costo = sistema.calcular_costo_reserva(nueva.id, impuesto=0.19)
+        return f"{nueva} | Costo con IVA: ${costo:,.2f}"
+
     ejecutar_operacion(
-        8, "Reserva con duración negativa (equipo, -2 días)",
+        9, "Reserva exitosa de una Asesoria (senior, 2 sesiones)",
+        reservar_asesoria)
+
+    ejecutar_operacion(
+        10, "Reserva con duración negativa (equipo, -2 días)",
         lambda: sistema.crear_reserva(id_cliente, "EQU-01", -2),
         espera_error=True)
 
@@ -156,7 +172,7 @@ def main():
         return sistema.crear_reserva(id_cliente, "EQU-01", 2, cantidad=1)
 
     ejecutar_operacion(
-        9, "Reserva sobre un servicio no disponible (equipo desactivado)",
+        11, "Reserva sobre un servicio no disponible (equipo desactivado)",
         reservar_servicio_desactivado,
         espera_error=True)
 
@@ -170,7 +186,7 @@ def main():
                 f"Con IVA y 10 % de descuento: ${con_descuento:,.2f}")
 
     ejecutar_operacion(
-        10, "Cálculo de costo con impuesto y descuento",
+        12, "Cálculo de costo con impuesto y descuento",
         calcular_variantes)
 
     def procesar():
@@ -178,11 +194,11 @@ def main():
         return f"{id_reserva} procesada. Total cobrado: ${total:,.2f}"
 
     ejecutar_operacion(
-        11, "Procesamiento exitoso de una reserva",
+        13, "Procesamiento exitoso de una reserva",
         procesar)
 
     ejecutar_operacion(
-        12, "Cancelación de una reserva ya procesada",
+        14, "Cancelación de una reserva ya procesada",
         lambda: sistema.cancelar_reserva(id_reserva),
         espera_error=True)
 
