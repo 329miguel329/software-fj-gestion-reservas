@@ -23,6 +23,7 @@ class Reserva(Entidad):  # La reserva es una entidad del sistema, por eso hereda
     PENDIENTE = "PENDIENTE"  # Reserva creada, aún sin confirmar
     CONFIRMADA = "CONFIRMADA"  # Reserva aprobada
     CANCELADA = "CANCELADA"  # Reserva anulada por el cliente
+    PROCESADA = "PROCESADA"  # Reserva confirmada y con el total ya calculado (estado final)
     FALLIDA = "FALLIDA"  # Reserva que no se pudo procesar
 
     _contador = 0   # Contador de clase (compartido por todas las reservas) para generar ids consecutivos
@@ -85,9 +86,9 @@ class Reserva(Entidad):  # La reserva es una entidad del sistema, por eso hereda
             registrar_evento(f"{self.id}: intento de confirmación finalizado.")  # Deja constancia de que el intento terminó
 
     def cancelar(self):  # Pasa la reserva a CANCELADA
-        """Cancela la reserva (no aplica si ya está cancelada o fallida)."""
+        """Cancela la reserva (no aplica si ya está cancelada, fallida o procesada)."""
         try:  # Bloque donde se hace la comprobación
-            if self._estado in (Reserva.CANCELADA, Reserva.FALLIDA):  # No se puede cancelar lo que ya está cancelado o fallido
+            if self._estado in (Reserva.CANCELADA, Reserva.FALLIDA, Reserva.PROCESADA):  # No se puede cancelar lo que ya está cancelado, fallido o procesado
                 raise OperacionNoPermitidaError(  # Lanza excepción de operación no permitida
                     f"No se puede cancelar una reserva en estado {self._estado}.")  # Mensaje con el estado actual
         except OperacionNoPermitidaError as e:  # Captura solo ese tipo de error
@@ -100,9 +101,14 @@ class Reserva(Entidad):  # La reserva es una entidad del sistema, por eso hereda
             registrar_evento(f"{self.id}: intento de cancelación finalizado.")  # Deja constancia del intento
 
     def procesar(self, impuesto=0.19, descuento=0):  # Confirma la reserva y calcula el total (impuesto por defecto 19 %)
-        """Confirma y calcula el total. Si algo falla, marca FALLIDA y encadena la causa."""
+        """Confirma (si hace falta) y calcula el total. Si todo sale bien queda PROCESADA;
+        si algo falla, marca FALLIDA y encadena la causa."""
         try:  # Bloque principal del procesamiento
-            self.confirmar()  # Paso 1: confirmar la reserva
+            if self._estado == Reserva.PENDIENTE:  # Si aún no está confirmada...
+                self.confirmar()  # Paso 1: ...se confirma primero
+            elif self._estado != Reserva.CONFIRMADA:  # Solo se procesan reservas pendientes o confirmadas
+                raise OperacionNoPermitidaError(  # Cualquier otro estado (cancelada, fallida, procesada) no se puede procesar
+                    f"No se puede procesar una reserva en estado {self._estado}.")  # Mensaje con el estado actual
             total = self.calcular_total(impuesto, descuento)  # Paso 2: calcular el total con impuesto y descuento
         except Exception as e:  # Si falla cualquiera de los dos pasos...
             if self._estado == Reserva.PENDIENTE:       # Solo se marca como fallida si seguía pendiente
@@ -110,6 +116,7 @@ class Reserva(Entidad):  # La reserva es una entidad del sistema, por eso hereda
             registrar_error(f"{self.id}: procesamiento fallido - {e}")  # Registra el error en el log
             raise ReservaError(f"No se pudo procesar la reserva {self.id}.") from e  # Lanza un error general conservando la causa original
         else:  # Si todo salió bien
+            self._estado = Reserva.PROCESADA  # Cambia el estado a procesada (ya no se puede cancelar)
             registrar_evento(f"{self.id}: procesada. Total ${total:,.2f}")  # Registra el total procesado
             return total  # Devuelve el total al llamador
         finally:  # Se ejecuta siempre
