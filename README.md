@@ -155,14 +155,40 @@ Después de ejecutar, revisa el archivo `logs/eventos.log`.
 
 ## Integrantes
 
-| Nombre                    | Rol / Aporte                                                                  |
-| ------------------------- | ----------------------------------------------------------------------------- |
-| _Santiago Fernandez Mora_ | Clase abstracta `Entidad` y clase `Cliente` (`entidad.py`, `cliente.py`)      |
-| _David Rodriguez_         | Jerarquía de servicios (`servicios.py`)                                       |
-| _David Rodriguez_         | Clase `Reserva` y su ciclo de vida (`reserva.py`)                             |
-| _Miguel Angel Muñoz_      | Excepciones, logger y `SistemaGestion` (`excepciones.py`, `logger.py`, `gestor.py`) |
-| _Miguel Angel Muñoz_      | Simulación (`main.py`) y documentación (`README.md`)                          |
+| Nombre                   | Usuario de GitHub         | Rol / Aporte                                                                  |
+| -------------------------| --------------------------| ----------------------------------------------------------------------------- |
+| _Santiago Fernandez Mora_|sfernandezmor, noc322      | Clase abstracta `Entidad` y clase `Cliente` (`entidad.py`, `cliente.py`)      |
+| _David Rodriguez_        |guiliamfordemaker          | Jerarquía de servicios (`servicios.py`)                                       |
+| _David Rodriguez_        |guiliamfordemaker          | Clase `Reserva` y su ciclo de vida (`reserva.py`)                             |
+| _Miguel Angel Muñoz_     |329miguel329,miguelmunoz29 | Excepciones, logger y `SistemaGestion` (`excepciones.py`, `logger.py`, `gestor.py`) |
+| _Miguel Angel Muñoz_     |329miguel329, miguelmunoz29| Simulación (`main.py`) y documentación (`README.md`)                          |
 
 **Grupo:** 213023_624
 
 **Tutor:** EDDUAR YAKSEIR PEREZ PEREZ
+
+
+## Evidencias del trabajo colaborativo
+
+### Historial de commits
+<img width="898" height="732" alt="image" src="https://github.com/user-attachments/assets/bdeedb94-c94b-4954-846c-33974d097df9" />
+<img width="898" height="568" alt="image" src="https://github.com/user-attachments/assets/fda71e84-daa4-4448-bbdf-90eb08095dee" />
+
+### Colaboradores
+<img width="898" height="450" alt="image" src="https://github.com/user-attachments/assets/8d6de080-ae60-4039-bda6-17fefad00fcb" />
+
+### Pull requests
+
+<img width="898" height="343" alt="image" src="https://github.com/user-attachments/assets/bdb3621f-03d9-4069-806b-e69bd433c354" />
+
+### Commits por integrante
+
+<img width="904" height="259" alt="image" src="https://github.com/user-attachments/assets/516d522e-7009-418f-a3d6-e5cba40f6cb8" />
+
+
+
+<img width="898" height="450" alt="image" src="https://github.com/user-attachments/assets/6e41e4bd-4e61-4aad-8067-764838ed8bd3" />
+
+### Pull requests
+
+
